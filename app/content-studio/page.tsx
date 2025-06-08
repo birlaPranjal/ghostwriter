@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { TopBar } from "@/components/dashboard/topbar"
-import { FileText, BookOpen, Mic, Share2, Download, Eye, Edit2, Trash2 } from "lucide-react"
+import { FileText, BookOpen, Mic, Share2, Download, Eye, Edit2, Trash2, Pencil, Upload } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -24,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BlogEditor } from "@/components/dashboard/blog-editor"
 
 interface ContentData {
   title: string
@@ -32,6 +33,8 @@ interface ContentData {
   length: string
   format: string
   type: string
+  style?: string
+  emotion?: string
 }
 
 interface Project {
@@ -60,6 +63,7 @@ export default function ContentStudioPage() {
     type: "blog"
   })
   const [generatedContent, setGeneratedContent] = useState<string>("")
+  const [generatedImage, setGeneratedImage] = useState<string>("")
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -95,22 +99,15 @@ export default function ContentStudioPage() {
     e.preventDefault()
     setLoading(true)
     setGeneratedContent("")
+    setGeneratedImage("")
 
     try {
-      const prompt = getPromptTemplate(contentData)
-
-      const response = await fetch("/api/content", {
+      const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: contentData.type,
-          title: contentData.title,
-          prompt: contentData.description,
-          parameters: {
-            tone: contentData.tone,
-            length: contentData.length,
-            format: contentData.format
-          }
+          prompt: getPromptTemplate(contentData)
         })
       })
 
@@ -119,14 +116,27 @@ export default function ContentStudioPage() {
       }
 
       const data = await response.json()
+      setGeneratedContent(data.content)
+      
+      // Get image for the content
+      try {
+        const imageResponse = await fetch("/api/pexels", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: contentData.title })
+        })
+        if (imageResponse.ok) {
+          const imageData = await imageResponse.json()
+          setGeneratedImage(imageData.imageUrl)
+        }
+      } catch (error) {
+        console.error("Error fetching image:", error)
+      }
       
       toast({
         title: "Success",
         description: "Content generated successfully!",
       })
-
-      // Redirect to the content display page
-      router.push(`/content-studio/${contentData.type}/${data._id}`)
     } catch (error) {
       console.error("Error generating content:", error)
       toast({
@@ -136,6 +146,52 @@ export default function ContentStudioPage() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handlePublish = async () => {
+    if (!generatedContent || !contentData.title) {
+      toast({
+        title: "Error",
+        description: "Please generate content first",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      const response = await fetch("/api/publishBlog", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: contentData.title,
+          content: generatedContent,
+          type: contentData.type,
+          tone: contentData.tone || "professional",
+          style: contentData.style || "blog",
+          emotion: contentData.emotion || "medium",
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to publish blog")
+      }
+
+      const data = await response.json()
+      toast({
+        title: "Success",
+        description: "Blog published successfully!"
+      })
+      router.push(`/blog/${data.blogId}`)
+    } catch (error) {
+      console.error("Error publishing blog:", error)
+      toast({
+        title: "Error",
+        description: "Failed to publish blog",
+        variant: "destructive"
+      })
     }
   }
 
@@ -207,7 +263,7 @@ export default function ContentStudioPage() {
   }
 
   const getPromptTemplate = (data: ContentData) => {
-    const basePrompt = `Write a ${data.type} with the following details:
+    return `Write a ${data.type} with the following details:
 Title: ${data.title}
 Description: ${data.description}
 Tone: ${data.tone}
@@ -215,8 +271,6 @@ Length: ${data.length}
 Format: ${data.format}
 
 Please generate high-quality content that matches these specifications.`
-
-    return basePrompt
   }
 
   const copyToClipboard = async () => {
@@ -269,6 +323,20 @@ Please generate high-quality content that matches these specifications.`
   if (status === "unauthenticated") {
     router.push("/login")
     return null
+  }
+
+  if (isEditing) {
+    return (
+      <BlogEditor
+        initialTitle={contentData.title}
+        initialContent={generatedContent}
+        initialTone={contentData.tone}
+        initialStyle={contentData.format}
+        initialEmotion={contentData.length}
+        initialImageUrl={generatedImage}
+        isEditing={true}
+      />
+    )
   }
 
   return (
@@ -705,9 +773,46 @@ Please generate high-quality content that matches these specifications.`
                             <Share2 className="h-4 w-4" />
                             Share
                           </Button>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => setIsEditing(true)}
+                            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700"
+                          >
+                            <Pencil className="h-4 w-4" />
+                            Edit Content
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handlePublish}
+                            disabled={loading}
+                            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700"
+                          >
+                            {loading ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Publishing...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4" />
+                                Publish Blog
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </CardHeader>
                       <CardContent>
+                        {generatedImage && (
+                          <div className="mb-6">
+                            <img
+                              src={generatedImage}
+                              alt={contentData.title}
+                              className="w-full h-64 object-cover rounded-lg"
+                            />
+                          </div>
+                        )}
                         <div className="prose prose-invert max-w-none">
                           <ReactMarkdown>{generatedContent}</ReactMarkdown>
                         </div>

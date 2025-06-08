@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import { connectDB } from "@/lib/mongodb"
+import Blog from "@/lib/models/Blog"
 
 export async function GET(
   request: Request,
@@ -9,51 +10,27 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 })
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const blog = await prisma.blog.findUnique({
-      where: { id: params.id },
-      include: {
-        author: {
-          select: {
-            name: true,
-            image: true
-          }
-        },
-        likes: {
-          where: {
-            userId: session.user.id
-          }
-        },
-        bookmarks: {
-          where: {
-            userId: session.user.id
-          }
-        }
-      }
-    })
+    await connectDB()
+
+    const blog = await Blog.findById(params.id)
+      .populate('authorId', 'name image')
+      .lean()
 
     if (!blog) {
-      return new NextResponse("Blog not found", { status: 404 })
+      return NextResponse.json({ error: "Blog not found" }, { status: 404 })
     }
 
-    // Calculate read time (rough estimate: 200 words per minute)
-    const wordCount = blog.content.split(/\s+/).length
-    const readTime = Math.ceil(wordCount / 200)
-
-    return NextResponse.json({
-      ...blog,
-      readTime,
-      liked: blog.likes.length > 0,
-      bookmarked: blog.bookmarks.length > 0,
-      likes: blog._count?.likes || 0,
-      comments: blog._count?.comments || 0
-    })
+    return NextResponse.json(blog)
   } catch (error) {
-    console.error("[BLOG_GET]", error)
-    return new NextResponse("Internal error", { status: 500 })
+    console.error("Error fetching blog:", error)
+    return NextResponse.json(
+      { error: "Failed to fetch blog" },
+      { status: 500 }
+    )
   }
 }
 

@@ -27,8 +27,32 @@ const blogSchema = new Schema<IBlog>({
     type: Date,
     default: Date.now,
   },
+  type: {
+    type: String,
+    enum: ['blog', 'story', 'speech'],
+    default: 'blog',
+  },
+  tone: {
+    type: String,
+    default: 'professional',
+  },
+  style: {
+    type: String,
+    default: 'narrative',
+  },
+  emotion: {
+    type: String,
+    default: 'neutral',
+  },
 }, {
   timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+// Create indexes for better query performance
+blogSchema.index({ authorId: 1 });
+blogSchema.index({ publishedAt: -1 });
+blogSchema.index({ type: 1 });
 
 export default mongoose.models.Blog || mongoose.model<IBlog>('Blog', blogSchema); 

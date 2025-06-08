@@ -17,59 +17,56 @@ interface BlogPostPageProps {
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user) {
+    return notFound()
+  }
+
   await connectDB()
 
   const blog = await Blog.findById(params.id)
-    .populate('authorId', 'name image email')
-    .lean() as unknown as PopulatedBlog | null
+    .populate({
+      path: 'authorId',
+      select: 'name image email',
+      model: 'User'
+    })
+    .lean() as PopulatedBlog | null
 
   if (!blog) {
     return notFound()
   }
 
-  // Get the session to check if the current user is the author
-  const session = await getServerSession(authOptions)
-  const isAuthor = session?.user?.email === blog.authorId.email
-
   return (
-    <div className="container mx-auto py-8">
-      <Card className="bg-purple-950/20 border-purple-900/30">
+    <div className="container mx-auto px-4 py-8">
+      <Card className="max-w-4xl mx-auto">
         <CardHeader>
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden">
-              <Image
-                src={blog.authorId.image || "/images/default-avatar.png"}
-                alt={blog.authorId.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">{blog.authorId.name}</p>
-              <p className="text-xs text-gray-500">
-                {formatDistanceToNow(new Date(blog.publishedAt), { addSuffix: true })}
-              </p>
-            </div>
+          <div className="relative w-full h-[400px] mb-6">
+            <Image
+              src={blog.imageUrl}
+              alt={blog.title}
+              fill
+              className="object-cover rounded-lg"
+            />
           </div>
-          <CardTitle className="text-3xl">{blog.title}</CardTitle>
+          <CardTitle className="text-3xl font-bold mb-4">{blog.title}</CardTitle>
+          <div className="flex items-center space-x-4 text-sm text-gray-500">
+            <div className="flex items-center">
+              <Image
+                src={blog.authorId.image || '/default-avatar.png'}
+                alt={blog.authorId.name}
+                width={24}
+                height={24}
+                className="rounded-full mr-2"
+              />
+              <span>{blog.authorId.name}</span>
+            </div>
+            <span>•</span>
+            <span>{formatDistanceToNow(new Date(blog.publishedAt), { addSuffix: true })}</span>
+          </div>
         </CardHeader>
         <CardContent>
-          {blog.imageUrl && (
-            <div className="relative w-full h-[400px] mb-8 rounded-lg overflow-hidden">
-              <Image
-                src={blog.imageUrl}
-                alt={blog.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-          <div className="prose prose-invert max-w-none">
-            {blog.content.split("\n").map((paragraph, index) => (
-              <p key={index} className="mb-4">
-                {paragraph}
-              </p>
-            ))}
+          <div className="prose prose-lg max-w-none">
+            {blog.content}
           </div>
         </CardContent>
       </Card>

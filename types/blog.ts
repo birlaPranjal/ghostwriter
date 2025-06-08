@@ -6,6 +6,10 @@ export interface IBlogBase {
   imageUrl: string
   published: boolean
   publishedAt: Date
+  type: string
+  tone: string
+  style: string
+  emotion: string
   createdAt: Date
   updatedAt: Date
 }
