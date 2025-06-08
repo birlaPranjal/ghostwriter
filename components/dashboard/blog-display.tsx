@@ -15,11 +15,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { toast } from "@/hooks/use-toast"
 
 interface BlogDisplayProps {
   title: string
@@ -132,10 +132,16 @@ export function BlogDisplay({
     try {
       await navigator.clipboard.writeText(shareUrl)
       setIsCopied(true)
-      toast.success("Link copied to clipboard!")
+      toast({
+        title: "Link copied to clipboard!",
+        description: "You can now share this link with others",
+      })
       setTimeout(() => setIsCopied(false), 2000)
     } catch (error) {
-      toast.error("Failed to copy link")
+      toast({
+        title: "Failed to copy link",
+        description: "Please try again",
+      })
     }
   }
 
