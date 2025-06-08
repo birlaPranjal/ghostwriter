@@ -39,8 +39,8 @@ export const authOptions: NextAuthOptions = {
 
         await connectDB()
 
-        // Find user by email
-        const user = await User.findOne({ email: credentials.email })
+        // Find user by email and explicitly select password field
+        const user = await User.findOne({ email: credentials.email }).select('+password')
 
         // If user doesn't exist, create a new one
         if (!user) {
@@ -48,7 +48,7 @@ export const authOptions: NextAuthOptions = {
             email: credentials.email,
             password: credentials.password,
           })
-          
+
           return {
             id: newUser._id.toString(),
             email: newUser.email,

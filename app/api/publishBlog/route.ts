@@ -14,8 +14,19 @@ export async function POST(req: Request) {
 
     const { title, content, type, tone, style, emotion } = await req.json()
 
-    if (!title || !content) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    // Validate all required fields
+    if (!title || !content || !type || !tone || !style || !emotion) {
+      return NextResponse.json({
+        error: "Missing required fields",
+        details: {
+          title: !title,
+          content: !content,
+          type: !type,
+          tone: !tone,
+          style: !style,
+          emotion: !emotion
+        }
+      }, { status: 400 })
     }
 
     await connectDB()
@@ -48,7 +59,14 @@ export async function POST(req: Request) {
     }
 
     // Get a relevant image for the blog
-    const imageUrl = await getImageUrl(title)
+    let imageUrl
+    try {
+      imageUrl = await getImageUrl(title)
+    } catch (error) {
+      console.error("Error getting image:", error)
+      // Use a default image if Pexels API fails
+      imageUrl = "https://images.pexels.com/photos/267669/pexels-photo-267669.jpeg"
+    }
 
     // Create the blog post
     const blog = await Blog.create({
@@ -63,25 +81,19 @@ export async function POST(req: Request) {
       userId: session.user.id,
     })
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: "Blog published successfully",
       slug: blog.slug,
       blogId: blog._id,
-      blog 
+      blog
     })
   } catch (error: any) {
     console.error("Error publishing blog:", error)
-    
-    // Handle duplicate key error
-    if (error.code === 11000) {
-      return NextResponse.json({
-        error: "A blog with this title already exists",
-        details: error.keyPattern
-      }, { status: 409 })
-    }
-
     return NextResponse.json(
-      { error: "Failed to publish blog" },
+      {
+        error: "Failed to publish blog",
+        details: error.message
+      },
       { status: 500 }
     )
   }
