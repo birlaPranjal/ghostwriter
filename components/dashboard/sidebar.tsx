@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Ghost, Home, FileText, User, Settings, LogOut } from "lucide-react"
+import { Ghost, Home, FileText, User, Settings, LogOut, Brain } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
@@ -11,6 +11,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Content Studio", href: "/content-studio", icon: FileText },
   { name: "Profile", href: "/profile", icon: User },
+  { name: "Train Me", href: "/profile/train-me", icon: Brain },
   { name: "Settings", href: "/settings", icon: Settings },
 ]
 
