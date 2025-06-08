@@ -29,7 +29,7 @@ export default function DashboardPage() {
 
   // Mock stats data - you can replace this with real data from your backend
   const stats = [
-    { title: "Blogs", value: recentBlogs.length, icon: FileText, color: "text-blue-400" },
+    { title: "Blogs", value: 12, icon: FileText, color: "text-blue-400" },
     { title: "Stories", value: 8, icon: BookOpen, color: "text-purple-400" },
     { title: "Speeches", value: 5, icon: Mic, color: "text-red-400" },
     { title: "History", value: 25, icon: History, color: "text-orange-400" },
