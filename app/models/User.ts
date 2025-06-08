@@ -209,6 +209,31 @@ const UserSchema = new Schema(
       type: Number,
       default: 0,
     },
+    // New fields for training data
+    previousPosts: [String],
+    socialMediaHistory: [{
+      platform: String,
+      content: String,
+      engagement: Number,
+      date: Date
+    }],
+    trainingMetrics: {
+      totalPosts: Number,
+      averageEngagement: Number,
+      bestPerformingPlatform: String,
+      mostEngagedTopics: [String],
+      writingStyleEvolution: [{
+        date: Date,
+        style: String,
+        metrics: {
+          optimisticTone: Number,
+          reflectiveQuality: Number,
+          motivationalImpact: Number,
+          poeticElements: Number,
+          conversationalStyle: Number
+        }
+      }]
+    }
   },
   {
     timestamps: true,
