@@ -314,21 +314,21 @@ export default function WritingTestPage() {
                           <h3 className="text-lg font-medium text-purple-400">Writing Metrics</h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             {Object.entries(analysis.writingMetrics).map(([key, metric]) => (
-                              <Card key={key} className="bg-black/20 border-purple-900/30">
-                                <CardHeader>
+                          <Card key={key} className="bg-black/20 border-purple-900/30">
+                            <CardHeader>
                                   <CardTitle className="text-base capitalize">
-                                    {key.replace(/([A-Z])/g, ' $1').trim()}
-                                  </CardTitle>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-full bg-purple-900/30 rounded-full h-2">
-                                      <div
-                                        className="bg-purple-600 h-2 rounded-full"
-                                        style={{ width: `${metric.score}%` }}
-                                      />
-                                    </div>
-                                    <span className="text-sm text-purple-400">{metric.score}%</span>
-                                  </div>
-                                </CardHeader>
+                                {key.replace(/([A-Z])/g, ' $1').trim()}
+                              </CardTitle>
+                              <div className="flex items-center gap-2">
+                                <div className="w-full bg-purple-900/30 rounded-full h-2">
+                                  <div
+                                    className="bg-purple-600 h-2 rounded-full"
+                                    style={{ width: `${metric.score}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm text-purple-400">{metric.score}%</span>
+                              </div>
+                            </CardHeader>
                               </Card>
                             ))}
                           </div>
@@ -352,47 +352,47 @@ export default function WritingTestPage() {
                         <div>
                           <h3 className="text-lg font-medium text-purple-400">Content Analysis</h3>
                           <div className="mt-4 space-y-4">
-                            <div>
+                                <div>
                               <h4 className="text-sm font-medium text-purple-300">Key Themes</h4>
                               <ul className="mt-2 space-y-1">
                                 {analysis.contentAnalysis.keyThemes.map((theme, i) => (
                                   <li key={i} className="text-gray-300">{theme}</li>
-                                ))}
-                              </ul>
-                            </div>
-                            <div>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div>
                               <h4 className="text-sm font-medium text-purple-300">Impact</h4>
                               <p className="text-gray-300">{analysis.contentAnalysis.emotionalImpact}</p>
-                            </div>
-                          </div>
-                        </div>
+                                </div>
+                              </div>
+                      </div>
 
                         <div>
                           <h3 className="text-lg font-medium text-purple-400">Recommendations</h3>
                           <div className="mt-4 space-y-4">
                             <div>
                               <h4 className="text-sm font-medium text-purple-300">Style Enhancements</h4>
-                              <ul className="mt-2 space-y-1">
+                          <ul className="mt-2 space-y-1">
                                 {analysis.recommendations.styleEnhancements.map((enhancement, i) => (
                                   <li key={i} className="text-gray-300">{enhancement}</li>
-                                ))}
-                              </ul>
-                            </div>
-                            <div>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
                               <h4 className="text-sm font-medium text-purple-300">Content Suggestions</h4>
-                              <ul className="mt-2 space-y-1">
+                          <ul className="mt-2 space-y-1">
                                 {analysis.recommendations.contentSuggestions.map((suggestion, i) => (
                                   <li key={i} className="text-gray-300">{suggestion}</li>
-                                ))}
-                              </ul>
-                            </div>
-                            <div>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
                               <h4 className="text-sm font-medium text-purple-300">Practice Exercises</h4>
-                              <ul className="mt-2 space-y-1">
+                          <ul className="mt-2 space-y-1">
                                 {analysis.recommendations.practiceExercises.map((exercise, i) => (
                                   <li key={i} className="text-gray-300">{exercise}</li>
-                                ))}
-                              </ul>
+                            ))}
+                          </ul>
                             </div>
                           </div>
                         </div>

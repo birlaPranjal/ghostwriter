@@ -15,8 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-import { Loader2, Save, ArrowLeft } from "lucide-react"
+import { Loader2, Save, ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { getImageUrl } from "@/lib/pexels"
+import { BlogDisplay } from "./blog-display"
 
 interface BlogEditorProps {
   blogId?: string
@@ -81,13 +82,15 @@ export function BlogEditor({
   const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl)
   const [isLoading, setIsLoading] = useState(false)
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
+  const [isPreviewMode, setIsPreviewMode] = useState(false)
+  const [isDraft, setIsDraft] = useState(true)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, publish: boolean = false) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      const endpoint = isEditing ? `/api/publishBlog/${blogId}` : '/api/publishBlog'
+      const endpoint = isEditing ? `/api/blog/${blogId}` : '/api/blog'
       const method = isEditing ? 'PUT' : 'POST'
 
       const response = await fetch(endpoint, {
@@ -102,6 +105,7 @@ export function BlogEditor({
           style,
           emotion,
           imageUrl,
+          published: publish,
         }),
       })
 
@@ -110,8 +114,19 @@ export function BlogEditor({
       }
 
       const data = await response.json()
-      toast.success(isEditing ? 'Blog updated successfully!' : 'Blog published successfully!')
-      router.push(`/dashboard/content/${data.blogId}`)
+      toast.success(
+        publish 
+          ? 'Blog published successfully!' 
+          : isEditing 
+            ? 'Blog updated successfully!' 
+            : 'Blog saved as draft!'
+      )
+      
+      if (publish) {
+        router.push(`/blog/${data.id}`)
+      } else {
+        router.push(`/dashboard/content/${data.id}`)
+      }
     } catch (error) {
       console.error('Error saving blog:', error)
       toast.error('Failed to save blog. Please try again.')
@@ -139,6 +154,35 @@ export function BlogEditor({
     }
   }
 
+  if (isPreviewMode) {
+    return (
+      <div className="w-full">
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            className="border-purple-600 text-purple-300 hover:bg-purple-900/20"
+            onClick={() => setIsPreviewMode(false)}
+          >
+            <EyeOff className="mr-2 h-4 w-4" />
+            Exit Preview
+          </Button>
+        </div>
+        <BlogDisplay
+          title={title}
+          content={content}
+          tone={tone}
+          style={style}
+          emotion={emotion}
+          imageUrl={imageUrl}
+          authorId=""
+          blogId=""
+          authorName="Anonymous"
+          contentLength="descriptive"
+        />
+      </div>
+    )
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -152,19 +196,29 @@ export function BlogEditor({
             <CardTitle className="text-3xl font-bold ghost-glow">
               {isEditing ? 'Edit Blog' : 'Create New Blog'}
             </CardTitle>
-            <Button
-              variant="outline"
-              className="border-purple-600 text-purple-300 hover:bg-purple-900/20"
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                className="border-purple-600 text-purple-300 hover:bg-purple-900/20"
+                onClick={() => setIsPreviewMode(true)}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                Preview
+              </Button>
+              <Button
+                variant="outline"
+                className="border-purple-600 text-purple-300 hover:bg-purple-900/20"
+                onClick={() => router.back()}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+            </div>
           </div>
         </CardHeader>
         
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
             <div className="space-y-4">
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-purple-300 mb-2">
@@ -284,21 +338,41 @@ export function BlogEditor({
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-4">
               <Button
-                type="submit"
-                className="bg-purple-600 text-white hover:bg-purple-700"
+                type="button"
+                variant="outline"
+                className="border-purple-600 text-purple-300 hover:bg-purple-900/20"
+                onClick={(e) => handleSubmit(e, false)}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {isEditing ? 'Updating...' : 'Publishing...'}
+                    Saving...
                   </>
                 ) : (
                   <>
                     <Save className="mr-2 h-4 w-4" />
-                    {isEditing ? 'Update Blog' : 'Publish Blog'}
+                    Save as Draft
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                className="bg-purple-600 text-white hover:bg-purple-700"
+                onClick={(e) => handleSubmit(e, true)}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Publishing...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Publish Blog
                   </>
                 )}
               </Button>

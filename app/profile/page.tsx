@@ -79,28 +79,28 @@ export default function ProfilePage() {
     }
 
     if (status === "authenticated") {
-      const fetchProfile = async () => {
-        try {
-          setLoading(true)
-          const response = await fetch("/api/profile")
-          if (!response.ok) {
-            throw new Error("Failed to fetch profile")
-          }
-          const data = await response.json()
-          setProfileData(data)
-        } catch (error) {
-          console.error("Error fetching profile:", error)
-          toast({
-            title: "Error",
-            description: "Failed to load profile data. Please try again.",
-            variant: "destructive"
-          })
-        } finally {
-          setLoading(false)
+    const fetchProfile = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch("/api/profile")
+        if (!response.ok) {
+          throw new Error("Failed to fetch profile")
         }
+        const data = await response.json()
+        setProfileData(data)
+      } catch (error) {
+        console.error("Error fetching profile:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load profile data. Please try again.",
+          variant: "destructive"
+        })
+      } finally {
+        setLoading(false)
       }
+    }
 
-      fetchProfile()
+    fetchProfile()
     }
   }, [status, router, toast])
 
@@ -226,12 +226,12 @@ export default function ProfilePage() {
                           </div>
                         )}
                         <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => router.push("/profile/writing-test")}
-                          >
-                            Take Another Test
-                          </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => router.push("/profile/writing-test")}
+                        >
+                          Take Another Test
+                        </Button>
                           <Button
                             variant="default"
                             onClick={() => router.push("/profile/analysis")}
@@ -266,12 +266,12 @@ export default function ProfilePage() {
                           <ReactMarkdown>{profileData.personalityAnalysis}</ReactMarkdown>
                         </div>
                         <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => router.push("/profile/personality-quiz")}
-                          >
-                            Retake Quiz
-                          </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => router.push("/profile/personality-quiz")}
+                        >
+                          Retake Quiz
+                        </Button>
                           <Button
                             variant="default"
                             onClick={() => router.push("/profile/analysis")}
@@ -356,9 +356,9 @@ export default function ProfilePage() {
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div>
                       <CardTitle>Writing Style Metrics</CardTitle>
-                      <p className="text-sm text-gray-400">
+                    <p className="text-sm text-gray-400">
                         Overview of your writing style metrics
-                      </p>
+                    </p>
                     </div>
                     <Button
                       variant="default"
