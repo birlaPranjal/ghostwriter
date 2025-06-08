@@ -370,7 +370,7 @@ export default function TrainMePage() {
                         </CardHeader>
                         <CardContent>
                           <p className="text-sm text-gray-300">{post.content}</p>
-                        </div>
+                        </CardContent>
                       </Card>
                     ))}
                   </div>
