@@ -1,66 +1,30 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { motion } from "framer-motion"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Sidebar } from "@/components/dashboard/sidebar"
-import { TopBar } from "@/components/dashboard/topbar"
-import { SavedContent } from "@/components/dashboard/saved-content"
-import { StatsCards } from "@/components/dashboard/stats-cards"
-import { FileText, BookOpen, Mic, Save, Crown, Star, Zap } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { RecentBlogs } from "@/components/dashboard/recent-blogs"
+import { Sidebar } from "@/components/dashboard/sidebar"
+import { TopBar } from "@/components/dashboard/topbar"
+import { GhostChatbot } from "@/components/dashboard/ghost-chatbot"
+import { FileText, BookOpen, Mic, History, Save } from "lucide-react"
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("blogs")
-  const [stats, setStats] = useState({
-    blogs: 0,
-    stories: 0,
-    speeches: 0,
-    history: 0
-  })
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch("/api/stats")
-        if (!response.ok) throw new Error("Failed to fetch stats")
-        const data = await response.json()
-        setStats(data.stats)
-      } catch (error) {
-        console.error("Error fetching stats:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  // Mock stats data
+  const stats = [
+    { title: "Blogs", value: 12, icon: FileText, color: "text-blue-400" },
+    { title: "Stories", value: 8, icon: BookOpen, color: "text-purple-400" },
+    { title: "Speeches", value: 5, icon: Mic, color: "text-red-400" },
+    { title: "History", value: 25, icon: History, color: "text-orange-400" },
+  ]
 
-    fetchStats()
-  }, [])
-
-  const pricingPlans = [
-    {
-      name: "Apprentice",
-      price: "$9",
-      period: "/month",
-      features: ["100 generations/month", "Basic voices", "Standard support"],
-      current: true,
-    },
-    {
-      name: "Ghostwriter",
-      price: "$29",
-      period: "/month",
-      features: ["Unlimited generations", "Premium voices", "Priority support", "Advanced styles"],
-      popular: true,
-    },
-    {
-      name: "Phantom",
-      price: "$99",
-      period: "/month",
-      features: ["Everything in Ghostwriter", "Custom voice cloning", "API access", "White-label option"],
-    },
+  const tabs = [
+    { id: "blogs", label: "Blogs", icon: FileText },
+    { id: "stories", label: "Stories", icon: BookOpen },
+    { id: "speeches", label: "Speeches", icon: Mic },
+    { id: "saved", label: "Saved", icon: Save },
   ]
 
   return (
@@ -73,140 +37,88 @@ export default function DashboardPage() {
 
           <main className="p-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <h1 className="text-3xl font-bold mb-6 ghost-glow">Dashboard</h1>
+              <h1 className="text-3xl font-bold mb-8 ghost-glow">Dashboard</h1>
 
-              <div className="space-y-6">
-                <StatsCards stats={stats} />
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {stats.map((stat, index) => (
+                  <motion.div
+                    key={stat.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                  >
+                    <Card className="bg-gradient-to-br from-purple-950/20 to-black border-purple-900/30 hover:border-purple-600/50 transition-all duration-300">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-purple-300 mb-1">{stat.title}</p>
+                            <p className="text-3xl font-bold ghost-glow">{stat.value}</p>
+                          </div>
+                          <div className={`p-3 rounded-full bg-gradient-to-br from-purple-600/20 to-purple-800/20`}>
+                            <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                  <TabsList className="grid w-full grid-cols-4 bg-purple-950/20 border border-purple-900/30">
-                    <TabsTrigger
-                      value="blogs"
-                      className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300"
+              {/* Tab Navigation */}
+              <div className="grid grid-cols-4 gap-4 mb-8">
+                {tabs.map((tab) => (
+                  <motion.div key={tab.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button
+                      onClick={() => setActiveTab(tab.id)}
+                      variant={activeTab === tab.id ? "default" : "outline"}
+                      className={`w-full h-16 ${
+                        activeTab === tab.id
+                          ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white"
+                          : "border-purple-600/30 text-purple-300 hover:bg-purple-900/20"
+                      }`}
                     >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Blogs
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="stories"
-                      className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300"
-                    >
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Stories
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="speeches"
-                      className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300"
-                    >
-                      <Mic className="mr-2 h-4 w-4" />
-                      Speeches
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="saved"
-                      className="data-[state=active]:bg-purple-600/20 data-[state=active]:text-purple-300"
-                    >
-                      <Save className="mr-2 h-4 w-4" />
-                      Saved
-                    </TabsTrigger>
-                  </TabsList>
+                      <tab.icon className="mr-2 h-5 w-5" />
+                      {tab.label}
+                    </Button>
+                  </motion.div>
+                ))}
+              </div>
 
-                  <div className="grid lg:grid-cols-2 gap-6">
-                    <TabsContent value="blogs" className="space-y-6 m-0">
-                      <RecentBlogs />
-                    </TabsContent>
-
-                    <TabsContent value="stories" className="space-y-6 m-0">
-                      <SavedContent type="story" />
-                    </TabsContent>
-
-                    <TabsContent value="speeches" className="space-y-6 m-0">
-                      <SavedContent type="speech" />
-                    </TabsContent>
-
-                    <TabsContent value="saved" className="space-y-6 m-0">
-                      <SavedContent type="all" />
-                    </TabsContent>
-                  </div>
-                </Tabs>
-
-                {/* Subscription Plans */}
-                <Card className="bg-gradient-to-br from-purple-950/20 to-black border-purple-900/30 mt-6">
+              {/* Content Area */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <Card className="bg-gradient-to-br from-purple-950/20 to-black border-purple-900/30">
                   <CardHeader>
-                    <CardTitle className="ghost-glow">Subscription Plans</CardTitle>
+                    <CardTitle className="ghost-glow">
+                      Recent {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-3 gap-6">
-                      {pricingPlans.map((plan, index) => (
-                        <motion.div
-                          key={plan.name}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: index * 0.1 }}
-                          whileHover={{ scale: 1.02 }}
-                        >
-                          <Card
-                            className={`relative ${
-                              plan.popular
-                                ? "border-purple-600 fire-glow"
-                                : plan.current
-                                  ? "border-green-600"
-                                  : "border-purple-900/30"
-                            }`}
-                          >
-                            {plan.popular && (
-                              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                <Badge className="bg-gradient-to-r from-purple-600 to-red-600">
-                                  <Star className="mr-1 h-3 w-3" />
-                                  Most Popular
-                                </Badge>
-                              </div>
-                            )}
-                            {plan.current && (
-                              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                <Badge className="bg-green-600">
-                                  <Crown className="mr-1 h-3 w-3" />
-                                  Current Plan
-                                </Badge>
-                              </div>
-                            )}
-                            <CardHeader className="text-center">
-                              <CardTitle className="ghost-glow">{plan.name}</CardTitle>
-                              <div className="text-3xl font-bold">
-                                {plan.price}
-                                <span className="text-lg text-gray-400">{plan.period}</span>
-                              </div>
-                            </CardHeader>
-                            <CardContent>
-                              <ul className="space-y-2 mb-6">
-                                {plan.features.map((feature, i) => (
-                                  <li key={i} className="flex items-center text-sm">
-                                    <Zap className="mr-2 h-4 w-4 text-purple-400" />
-                                    {feature}
-                                  </li>
-                                ))}
-                              </ul>
-                              <Button
-                                className={`w-full ${
-                                  plan.current
-                                    ? "bg-green-600 hover:bg-green-700"
-                                    : "bg-gradient-to-r from-purple-600 to-red-600 hover:from-purple-700 hover:to-red-700 fire-glow"
-                                }`}
-                                disabled={plan.current}
-                              >
-                                {plan.current ? "Current Plan" : "Upgrade"}
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
+                  <CardContent className="p-8">
+                    <div className="text-center text-purple-300/70">
+                      <div className="mb-4">
+                        {activeTab === "blogs" && <FileText className="h-16 w-16 mx-auto text-purple-400/50" />}
+                        {activeTab === "stories" && <BookOpen className="h-16 w-16 mx-auto text-purple-400/50" />}
+                        {activeTab === "speeches" && <Mic className="h-16 w-16 mx-auto text-purple-400/50" />}
+                        {activeTab === "saved" && <Save className="h-16 w-16 mx-auto text-purple-400/50" />}
+                      </div>
+                      <p className="text-lg">No {activeTab} generated yet</p>
+                      <p className="text-sm mt-2">Start creating amazing content with our AI-powered tools</p>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+              </motion.div>
             </motion.div>
           </main>
         </div>
       </div>
+
+      {/* Ghost Chatbot */}
+      <GhostChatbot />
     </div>
   )
 }
