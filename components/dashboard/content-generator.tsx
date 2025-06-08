@@ -147,10 +147,11 @@ export function ContentGenerator({ type }: ContentGeneratorProps) {
           toast({
             title: "Duplicate Blog",
             description: "A blog with this title already exists. Would you like to edit it?",
-            action: {
-              label: "Edit",
-              onClick: () => window.open(`/dashboard/content/${data.blogId}/edit`, '_blank')
-            }
+            action: (
+              <Button variant="outline" onClick={() => window.open(`/dashboard/content/${data.blogId}/edit`, '_blank')}>
+                Edit
+              </Button>
+            )
           })
           return
         }
@@ -272,6 +273,9 @@ export function ContentGenerator({ type }: ContentGeneratorProps) {
               style={style}
               emotion={emotion}
               onTTS={() => {}}
+              authorId={""}
+              blogId={""}
+              authorName={""}
             />
             
             <div className="flex justify-end space-x-4 mt-4">
