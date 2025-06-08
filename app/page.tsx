@@ -179,7 +179,6 @@ export default function HomePage() {
       role: "Novelist",
       quote: "From writer's block to bestseller. This AI understands storytelling like no other.",
       avatar: "/placeholder.svg?height=40&width=40&text=EW",
-      avatar: "/placeholder.svg?height=40&width=40&text=EW",
     },
   ]
 
