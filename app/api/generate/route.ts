@@ -1,72 +1,99 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import OpenAI from "openai"
 import { authOptions } from "@/lib/auth"
+import OpenAI from "openai"
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-const getPromptTemplate = (type: string, prompt: string, tone: string, style: string, emotion: string) => {
+function getPromptTemplate(type: string, tone: string, style: string, emotion: string, topic: string) {
   const basePrompt = `Write a ${type} with the following characteristics:
 - Tone: ${tone}
 - Style: ${style}
 - Emotion: ${emotion}
-- Topic: ${prompt}
+- Topic: ${topic}
 
-Make it engaging, well-structured, and suitable for the specified tone and style.`
+Format the content in markdown with proper headings, paragraphs, and formatting.`
 
   switch (type) {
     case "blog":
-      return `${basePrompt}\n\nInclude proper headings, paragraphs, and a clear structure.`
+      return `${basePrompt}
+Include:
+- A compelling introduction
+- Clear sections with headings
+- Supporting points or examples
+- A strong conclusion
+- Call to action or key takeaways`
     case "story":
-      return `${basePrompt}\n\nInclude a clear plot, interesting characters, and a satisfying conclusion.`
+      return `${basePrompt}
+Include:
+- Character development
+- Setting description
+- Plot progression
+- Dialogue where appropriate
+- A satisfying resolution`
     case "speech":
-      return `${basePrompt}\n\nMake it inspiring, well-structured, and suitable for public speaking.`
+      return `${basePrompt}
+Include:
+- A powerful opening
+- Clear main points
+- Supporting evidence or examples
+- Rhetorical devices
+- A memorable conclusion`
     default:
       return basePrompt
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    
-    const { prompt, type, tone, style, emotion } = await request.json()
+    const session = await getServerSession(authOptions)
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-    if (!prompt || !type || !tone || !style || !emotion) {
+    const { topic, tone, style, emotion, type } = await req.json()
+
+    if (!topic || !tone || !style || !emotion || !type) {
       return NextResponse.json(
-        { error: "All fields are required" },
+        { error: "Missing required fields" },
         { status: 400 }
       )
     }
+
+    const prompt = getPromptTemplate(type, tone, style, emotion, topic)
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4-turbo-preview",
       messages: [
         {
           role: "system",
-          content: "You are a professional content writer who creates engaging and high-quality content.",
+          content: "You are a professional content writer who creates engaging and well-structured content.",
         },
         {
           role: "user",
-          content: getPromptTemplate(type, prompt, tone, style, emotion),
+          content: prompt,
         },
       ],
       temperature: 0.7,
       max_tokens: 2000,
     })
 
-    const content = completion.choices[0]?.message?.content
+    const generatedContent = completion.choices[0]?.message?.content || ""
+    
+    // Extract title from the first heading in the content
+    const titleMatch = generatedContent.match(/^# (.+)$/m)
+    const title = titleMatch ? titleMatch[1] : topic
 
-    if (!content) {
-      throw new Error("No content generated")
-    }
-
-    return NextResponse.json({ content })
-  } catch (error: any) {
+    return NextResponse.json({
+      content: generatedContent,
+      title,
+    })
+  } catch (error) {
     console.error("Error generating content:", error)
     return NextResponse.json(
-      { error: error.message || "Failed to generate content" },
+      { error: "Failed to generate content" },
       { status: 500 }
     )
   }

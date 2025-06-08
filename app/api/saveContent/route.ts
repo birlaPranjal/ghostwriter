@@ -1,44 +1,48 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import Blog from "@/app/models/Blog"
 import connectDB from "@/lib/mongodb"
-import User from "@/lib/models/User"
-import Content from "@/lib/models/Content"
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { title, content, type, tone, style, emotion } = await request.json()
 
-    if (!title || !content || !type) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    if (!title || !content || !type || !tone || !style || !emotion) {
+      return NextResponse.json(
+        { error: "All fields are required" },
+        { status: 400 }
+      )
     }
 
     await connectDB()
 
-    const user = await User.findOne({ email: session.user.email })
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
-    }
-
-    const savedContent = await Content.create({
+    const blog = new Blog({
       title,
       content,
       type,
       tone,
       style,
       emotion,
-      userId: user._id.toString(),
+      userId: session.user.id,
     })
 
-    return NextResponse.json({ success: true, id: savedContent._id })
-  } catch (error) {
+    await blog.save()
+
+    return NextResponse.json({ 
+      message: "Content saved successfully",
+      blog 
+    })
+  } catch (error: any) {
     console.error("Error saving content:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message || "Failed to save content" },
+      { status: 500 }
+    )
   }
 }

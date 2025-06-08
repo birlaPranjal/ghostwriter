@@ -18,7 +18,11 @@ interface SavedContentItem {
   createdAt: string
 }
 
-export function SavedContent() {
+interface SavedContentProps {
+  type?: 'blog' | 'story' | 'speech' | 'all'
+}
+
+export function SavedContent({ type = 'all' }: SavedContentProps) {
   const [savedContent, setSavedContent] = useState<SavedContentItem[]>([])
   const [loading, setLoading] = useState(true)
 

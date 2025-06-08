@@ -1,25 +1,41 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { TopBar } from "@/components/dashboard/topbar"
-import { ContentGenerator } from "@/components/dashboard/content-generator"
 import { SavedContent } from "@/components/dashboard/saved-content"
 import { StatsCards } from "@/components/dashboard/stats-cards"
 import { FileText, BookOpen, Mic, Save } from "lucide-react"
+import { RecentBlogs } from "@/components/dashboard/recent-blogs"
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("blogs")
+  const [stats, setStats] = useState({
+    blogs: 0,
+    stories: 0,
+    speeches: 0,
+    history: 0
+  })
+  const [loading, setLoading] = useState(true)
 
-  // Mock stats data - replace with real data from your backend
-  const stats = {
-    blogs: 12,
-    stories: 8,
-    speeches: 5,
-    history: 25,
-  }
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/api/stats")
+        if (!response.ok) throw new Error("Failed to fetch stats")
+        const data = await response.json()
+        setStats(data.stats)
+      } catch (error) {
+        console.error("Error fetching stats:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-purple-950/20 to-black">
@@ -31,7 +47,7 @@ export default function DashboardPage() {
 
           <main className="p-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <h1 className="text-3xl font-bold mb-6 ghost-glow">Content Studio</h1>
+              <h1 className="text-3xl font-bold mb-6 ghost-glow">Dashboard</h1>
 
               <div className="space-y-6">
                 <StatsCards stats={stats} />
@@ -70,19 +86,19 @@ export default function DashboardPage() {
 
                   <div className="grid lg:grid-cols-2 gap-6">
                     <TabsContent value="blogs" className="space-y-6 m-0">
-                      <ContentGenerator type="blog" />
+                      <RecentBlogs />
                     </TabsContent>
 
                     <TabsContent value="stories" className="space-y-6 m-0">
-                      <ContentGenerator type="story" />
+                      <SavedContent type="story" />
                     </TabsContent>
 
                     <TabsContent value="speeches" className="space-y-6 m-0">
-                      <ContentGenerator type="speech" />
+                      <SavedContent type="speech" />
                     </TabsContent>
 
                     <TabsContent value="saved" className="space-y-6 m-0">
-                      <SavedContent />
+                      <SavedContent type="all" />
                     </TabsContent>
                   </div>
                 </Tabs>

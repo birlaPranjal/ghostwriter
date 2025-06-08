@@ -10,6 +10,8 @@ export interface IUser extends Document {
   createdAt: Date
   updatedAt: Date
   comparePassword(candidatePassword: string): Promise<boolean>
+  accounts: mongoose.Types.ObjectId[]
+  sessions: mongoose.Types.ObjectId[]
 }
 
 const UserSchema = new Schema<IUser>(
@@ -19,6 +21,14 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, select: false },
     emailVerified: { type: Date },
     image: { type: String },
+    accounts: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Account',
+    }],
+    sessions: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Session',
+    }],
   },
   {
     timestamps: true,
