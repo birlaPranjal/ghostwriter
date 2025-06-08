@@ -9,7 +9,7 @@ import { signOut } from "next-auth/react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Content", href: "/content", icon: FileText },
+  { name: "Content Studio", href: "/content-studio", icon: FileText },
   { name: "Profile", href: "/profile", icon: User },
   { name: "Settings", href: "/settings", icon: Settings },
 ]

@@ -32,8 +32,19 @@ export function ContentGenerator({ type }: ContentGeneratorProps) {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, tone, style, emotion, type }),
+        body: JSON.stringify({ 
+          prompt: title,
+          type,
+          tone,
+          style,
+          emotion
+        }),
       })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to generate content")
+      }
 
       const data = await response.json()
 
