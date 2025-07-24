@@ -39,8 +39,8 @@ export const authOptions: NextAuthOptions = {
 
         await connectDB()
 
-        // Find user by email
-        const user = await User.findOne({ email: credentials.email })
+        // Find user by email and explicitly select password field
+        const user = await User.findOne({ email: credentials.email }).select('+password')
 
         // If user doesn't exist, create a new one
         if (!user) {
@@ -48,7 +48,7 @@ export const authOptions: NextAuthOptions = {
             email: credentials.email,
             password: credentials.password,
           })
-          
+
           return {
             id: newUser._id.toString(),
             email: newUser.email,
@@ -82,15 +82,19 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
+      }
+      if (account) {
+        token.provider = account.provider
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
+        session.user.provider = token.provider as string
       }
       return session
     },

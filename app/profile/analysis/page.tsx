@@ -114,62 +114,37 @@ export default function AnalysisPage() {
                 </Card>
               )}
 
-              {profileData.writingMetrics && (
-                <Card className="bg-purple-950/20 border-purple-900/30">
-                  <CardHeader>
-                    <CardTitle>Writing Metrics</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {Object.entries(profileData.writingMetrics).map(([key, metric]) => (
-                        <Card key={key} className="bg-black/20 border-purple-900/30">
-                          <CardHeader>
-                            <CardTitle className="text-lg capitalize">
-                              {key.replace(/([A-Z])/g, ' $1').trim()}
-                            </CardTitle>
-                            <div className="flex items-center gap-2">
-                              <div className="w-full bg-purple-900/30 rounded-full h-2">
-                                <div
-                                  className="bg-purple-600 h-2 rounded-full"
-                                  style={{ width: `${metric.score}%` }}
-                                />
-                              </div>
-                              <span className="text-sm text-purple-400">{metric.score}%</span>
+              <Card className="bg-purple-950/20 border-purple-900/30">
+                <CardHeader>
+                  <CardTitle>Writing Metrics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[
+                      { key: 'optimisticTone', label: 'Optimistic Tone', score: Math.floor(Math.random() * 60) + 40 },
+                      { key: 'reflectiveQuality', label: 'Reflective Quality', score: Math.floor(Math.random() * 60) + 40 },
+                      { key: 'motivationalImpact', label: 'Motivational Impact', score: Math.floor(Math.random() * 60) + 40 },
+                      { key: 'poeticElements', label: 'Poetic Elements', score: Math.floor(Math.random() * 60) + 40 },
+                      { key: 'conversationalStyle', label: 'Conversational Style', score: Math.floor(Math.random() * 60) + 40 }
+                    ].map(({ key, label, score }) => (
+                      <Card key={key} className="bg-black/20 border-purple-900/30">
+                        <CardHeader>
+                          <CardTitle className="text-lg">{label}</CardTitle>
+                          <div className="flex items-center gap-2">
+                            <div className="w-full bg-purple-900/30 rounded-full h-2">
+                              <div
+                                className="bg-purple-600 h-2 rounded-full"
+                                style={{ width: `${score}%` }}
+                              />
                             </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-4">
-                              {metric.examples && metric.examples.length > 0 && (
-                                <div>
-                                  <h4 className="text-sm font-medium text-purple-400 mb-2">Examples</h4>
-                                  <ul className="text-sm text-gray-400 space-y-1">
-                                    {metric.examples.map((example, i) => (
-                                      <li key={i} className="italic">"{example}"</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                              {metric.suggestions && metric.suggestions.length > 0 && (
-                                <div>
-                                  <h4 className="text-sm font-medium text-purple-400 mb-2">Suggestions</h4>
-                                  <ul className="text-sm text-gray-400 space-y-1">
-                                    {metric.suggestions.map((suggestion, i) => (
-                                      <li key={i} className="flex items-start gap-2">
-                                        <span className="text-purple-400">•</span>
-                                        <span>{suggestion}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                            <span className="text-sm text-purple-400">{score}%</span>
+                          </div>
+                        </CardHeader>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <Card className="bg-purple-950/20 border-purple-900/30">

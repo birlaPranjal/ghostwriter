@@ -2,86 +2,93 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import connectDB from "@/lib/mongodb"
-import Blog from "@/app/models/Blog"
+import Blog from "@/lib/models/Blog"
 import { getImageUrl } from "@/lib/pexels"
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { title, content, type, tone, style, emotion } = await req.json()
+    // Debug log to check session data
+    console.log("Session user:", session.user)
+
+    const { title, content, type, tone, style, emotion } = await request.json()
 
     if (!title || !content) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Title and content are required" },
+        { status: 400 }
+      )
     }
 
     await connectDB()
 
-    // Check if a blog with the same title already exists for this user
-    const existingBlog = await Blog.findOne({
-      title,
-      userId: session.user.id
-    })
-
-    if (existingBlog) {
-      return NextResponse.json({
-        error: "A blog with this title already exists",
-        blogId: existingBlog._id
-      }, { status: 409 })
-    }
-
-    // Generate a slug from the title
-    const baseSlug = title
+    // Generate slug from title
+    const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "")
 
-    // Check if a blog with this slug already exists
-    let slug = baseSlug
-    let counter = 1
-    while (await Blog.findOne({ slug })) {
-      slug = `${baseSlug}-${counter}`
-      counter++
+    // Get a relevant image from Pexels
+    let imageUrl = ""
+    try {
+      imageUrl = await getImageUrl(title)
+    } catch (error) {
+      console.error("Error fetching image:", error)
+      imageUrl = "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg" // Fallback image
     }
 
-    // Get a relevant image for the blog
-    const imageUrl = await getImageUrl(title)
+    // Ensure we have a valid user ID
+    if (!session.user.id) {
+      console.error("No user ID found in session:", session)
+      return NextResponse.json(
+        { error: "User ID not found in session" },
+        { status: 400 }
+      )
+    }
 
-    // Create the blog post
-    const blog = await Blog.create({
+    const blogData = {
       title,
       content,
+      type: type || "blog",
+      tone: tone || "professional",
+      style: style || "blog",
+      emotion: emotion || "medium",
       slug,
-      type,
-      tone,
-      style,
-      emotion,
+      authorId: session.user.id,
       imageUrl,
-      userId: session.user.id,
-    })
-
-    return NextResponse.json({ 
-      message: "Blog published successfully",
-      slug: blog.slug,
-      blogId: blog._id,
-      blog 
-    })
-  } catch (error: any) {
-    console.error("Error publishing blog:", error)
-    
-    // Handle duplicate key error
-    if (error.code === 11000) {
-      return NextResponse.json({
-        error: "A blog with this title already exists",
-        details: error.keyPattern
-      }, { status: 409 })
+      published: true,
+      publishedAt: new Date()
     }
 
+    // Debug log to check blog data
+    console.log("Creating blog with data:", blogData)
+
+    try {
+      const blog = await Blog.create(blogData)
+      return NextResponse.json({
+        success: true,
+        blogId: blog._id,
+        url: `/blog/${blog.authorId}/${blog._id}`,
+        imageUrl: blog.imageUrl
+      })
+    } catch (error: any) {
+      console.error("Error creating blog:", error)
+      if (error.name === 'ValidationError') {
+        return NextResponse.json(
+          { error: "Validation error: " + Object.values(error.errors).map((e: any) => e.message).join(', ') },
+          { status: 400 }
+        )
+      }
+      throw error
+    }
+  } catch (error) {
+    console.error("Error publishing blog:", error)
     return NextResponse.json(
-      { error: "Failed to publish blog" },
+      { error: error instanceof Error ? error.message : "Failed to publish blog" },
       { status: 500 }
     )
   }

@@ -106,6 +106,7 @@ export function BlogEditor({
           emotion,
           imageUrl,
           published: publish,
+          publishedAt: publish ? new Date() : undefined
         }),
       })
 
@@ -114,22 +115,27 @@ export function BlogEditor({
       }
 
       const data = await response.json()
-      toast.success(
-        publish 
+      toast({
+        title: "Success",
+        description: publish 
           ? 'Blog published successfully!' 
           : isEditing 
             ? 'Blog updated successfully!' 
             : 'Blog saved as draft!'
-      )
+      })
       
       if (publish) {
-        router.push(`/blog/${data.id}`)
+        router.push(`/blog/${data.blogId}`)
       } else {
-        router.push(`/dashboard/content/${data.id}`)
+        router.push(`/dashboard/content/${data.blogId}`)
       }
     } catch (error) {
       console.error('Error saving blog:', error)
-      toast.error('Failed to save blog. Please try again.')
+      toast({
+        title: "Error",
+        description: 'Failed to save blog. Please try again.',
+        variant: "destructive"
+      })
     } finally {
       setIsLoading(false)
     }

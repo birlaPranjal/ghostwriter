@@ -3,9 +3,15 @@
 import { motion } from "framer-motion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Bell, Settings, User } from "lucide-react"
-import { useSession } from "next-auth/react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { Bell, Settings, User, LogOut } from "lucide-react"
+import { useSession, signOut } from "next-auth/react"
 
 export function TopBar() {
   const { data: session } = useSession()
@@ -48,6 +54,14 @@ export function TopBar() {
               <DropdownMenuItem className="hover:bg-purple-900/20">
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-purple-900/30" />
+              <DropdownMenuItem
+                className="hover:bg-red-900/20 text-red-400 hover:text-red-300"
+                onClick={() => signOut({ callbackUrl: "/" })}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
